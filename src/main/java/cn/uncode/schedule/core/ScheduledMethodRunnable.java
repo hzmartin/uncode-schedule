@@ -6,56 +6,73 @@ import java.lang.reflect.UndeclaredThrowableException;
 
 import org.springframework.util.ReflectionUtils;
 
-public class ScheduledMethodRunnable implements Runnable {
+public class ScheduledMethodRunnable implements Runnable
+{
+
+	private String taskId;
 
 	private final Object target;
 
 	private final Method method;
-	
+
 	private final String params;
 
-
-	public ScheduledMethodRunnable(Object target, Method method, String params) {
+	public ScheduledMethodRunnable(Object target, Method method, String params, String taskId)
+	{
 		this.target = target;
 		this.method = method;
 		this.params = params;
+		this.taskId = taskId;
 	}
 
-	public ScheduledMethodRunnable(Object target, String methodName, String params) throws NoSuchMethodException {
-		this.target = target;
-		this.method = target.getClass().getMethod(methodName);
-		this.params = params;
-	}
-
-
-	public Object getTarget() {
+	public Object getTarget()
+	{
 		return this.target;
 	}
 
-	public Method getMethod() {
+	public Method getMethod()
+	{
 		return this.method;
 	}
-	
-	public String getParams() {
+
+	public String getParams()
+	{
 		return params;
 	}
 
 	@Override
-	public void run() {
-		try {
+	public void run()
+	{
+		try
+		{
 			ReflectionUtils.makeAccessible(this.method);
-			if(this.getParams() != null){
+			if (this.getParams() != null)
+			{
 				this.method.invoke(this.target, this.getParams());
-			}else{
+			}
+			else
+			{
 				this.method.invoke(this.target);
 			}
 		}
-		catch (InvocationTargetException ex) {
+		catch (InvocationTargetException ex)
+		{
 			ReflectionUtils.rethrowRuntimeException(ex.getTargetException());
 		}
-		catch (IllegalAccessException ex) {
+		catch (IllegalAccessException ex)
+		{
 			throw new UndeclaredThrowableException(ex);
 		}
+	}
+
+	public String getTaskId()
+	{
+		return taskId;
+	}
+
+	public void setTaskId(String taskId)
+	{
+		this.taskId = taskId;
 	}
 
 }

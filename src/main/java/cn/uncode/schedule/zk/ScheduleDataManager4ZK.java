@@ -480,8 +480,14 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager {
 							 String json = new String(data);
 							 TaskDefine taskDefine = this.gson.fromJson(json, TaskDefine.class);
 							 if(TaskDefine.TASK_TYPE_UNCODE.equals(taskDefine.getType())){
-								 ownerTask.add(taskName);
-								 DynamicTaskManager.scheduleTask(taskDefine, new Date(getSystemTime()));
+								ownerTask.add(taskName);
+								Date systime = new Date(getSystemTime());
+								Long expire = taskDefine.getExpire();
+								if(expire != null && expire < systime.getTime()) {
+									LOG.info("skip expire task: " + taskDefine);
+									continue;
+								}
+								DynamicTaskManager.scheduleTask(taskDefine);
 							 }
 						 }
 					 }

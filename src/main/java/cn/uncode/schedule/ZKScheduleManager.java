@@ -1,6 +1,5 @@
 package cn.uncode.schedule;
 
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -236,6 +235,7 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 	public void initialData() throws Exception {
 		this.zkManager.initial();
 		this.scheduleDataManager = new ScheduleDataManager4ZK(this.zkManager);
+		logger.debug("init : " + this.scheduleDataManager);
 		if (this.start) {
 			// 注册调度管理器
 			this.scheduleDataManager.registerScheduleServer(this.currenScheduleServer);
@@ -255,17 +255,13 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 	private Runnable taskWrapper(final Runnable task){
 		return new Runnable(){
 			public void run(){
-				Method targetMethod = null;
+				String taskId = null;
 				if(task instanceof ScheduledMethodRunnable){
 					ScheduledMethodRunnable uncodeScheduledMethodRunnable = (ScheduledMethodRunnable)task;
-					targetMethod = uncodeScheduledMethodRunnable.getMethod();
-				}else{
-					org.springframework.scheduling.support.ScheduledMethodRunnable springScheduledMethodRunnable = (org.springframework.scheduling.support.ScheduledMethodRunnable)task;
-					targetMethod = springScheduledMethodRunnable.getMethod();
+					taskId = uncodeScheduledMethodRunnable.getTaskId();
 				}
-		    	String[] beanNames = applicationcontext.getBeanNamesForType(targetMethod.getDeclaringClass());
-		    	if(null != beanNames && StringUtils.isNotEmpty(beanNames[0])){
-		    		String name = ScheduleUtil.getTaskNameFormBean(beanNames[0], targetMethod.getName());
+		    	if(StringUtils.isNotEmpty(taskId)){
+		    		String name = taskId;
 		    		boolean isOwner = false;
 					try {
 						if(!isScheduleServerRegister){
@@ -283,7 +279,7 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 						if(isOwner){
 			    			task.run();
 			    			scheduleDataManager.saveRunningInfo(name, currenScheduleServer.getUuid());
-			    			LOGGER.info("Cron job has been executed.");
+			    			LOGGER.info("Job has been executed.");
 			    		}
 					} catch (Exception e) {
 						LOGGER.error("Check task owner error.", e);
@@ -379,6 +375,8 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 	private void addTask(Runnable task, TaskDefine taskDefine){
 		if(task instanceof org.springframework.scheduling.support.ScheduledMethodRunnable){
 			try {
+				logger.debug("check: " + this.scheduleDataManager);
+				logger.debug("add: " + taskDefine.stringKey());
 				scheduleDataManager.addTask(taskDefine);
 			} catch (Exception e) {
 				LOGGER.error(String.format("add task exception, taskName:%s", taskDefine.stringKey()), e);
@@ -386,61 +384,32 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 		}
 	}
 	
-	@Override
-    public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, long period) {
-		TaskDefine taskDefine = getTaskDefine(task);
-		LOGGER.info("spring task init------taskName:{}, period:{}", taskDefine.stringKey(), period);
-		taskDefine.setPeriod(period);
+	public ScheduledFuture<?> schedule(TaskDefine taskDefine, Runnable task) {
+		Trigger cronTrigger = new CronTrigger(taskDefine.getCronExpression());
+		LOGGER.info("spring task init------trigger:" + taskDefine.getCronExpression());
 		addTask(task, taskDefine);
-        return super.scheduleAtFixedRate(taskWrapper(task), period);
-    }
-	
-	public ScheduledFuture<?> schedule(Runnable task, Trigger trigger) {
-		TaskDefine taskDefine = getTaskDefine(task);
-		if(trigger instanceof CronTrigger){
-			CronTrigger cronTrigger = (CronTrigger)trigger;
-			taskDefine.setCronExpression(cronTrigger.getExpression());
-			LOGGER.info("spring task init------trigger:" + cronTrigger.getExpression());
-		}
-		addTask(task, taskDefine);
-		return super.schedule(taskWrapper(task), trigger);
+		return super.schedule(taskWrapper(task), cronTrigger);
 	}
 
-	public ScheduledFuture<?> schedule(Runnable task, Date startTime) {
-		TaskDefine taskDefine = getTaskDefine(task);
+	public ScheduledFuture<?> scheduleByStartTime(TaskDefine taskDefine,Runnable task) {
+		Date startTime = taskDefine.getStartTime();
 		LOGGER.info("spring task init------taskName:{}, period:{}", taskDefine.stringKey(), startTime);
-		taskDefine.setStartTime(startTime);
 		addTask(task, taskDefine);
+		logger.debug("start schedule: " + task);
 		return super.schedule(taskWrapper(task), startTime);
 	}
 
-	public ScheduledFuture<?> scheduleAtFixedRate(Runnable task, Date startTime, long period) {
-		TaskDefine taskDefine = getTaskDefine(task);
+	public ScheduledFuture<?> scheduleAtFixedRate(TaskDefine taskDefine, Runnable task) {
+		long period = taskDefine.getPeriod();
 		LOGGER.info("spring task init------taskName:{}, period:{}", taskDefine.stringKey(), period);
-		taskDefine.setStartTime(startTime);
-		taskDefine.setPeriod(period);
 		addTask(task, taskDefine);
+		Date startTime = taskDefine.getStartTime();
+		if(startTime == null) {
+			return super.scheduleAtFixedRate(taskWrapper(task), period);
+		}
 		return super.scheduleAtFixedRate(taskWrapper(task), startTime, period);
 	}
 
-	public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, Date startTime, long delay) {
-		TaskDefine taskDefine = getTaskDefine(task);
-		LOGGER.info("spring task init------taskName:{}, delay:{}", taskDefine.stringKey(), delay);
-		taskDefine.setStartTime(startTime);
-		taskDefine.setPeriod(delay);
-		taskDefine.setType(TaskDefine.TASK_TYPE_QSD);
-		addTask(task, taskDefine);
-		return super.scheduleWithFixedDelay(taskWrapper(task), startTime, delay);
-	}
-
-	public ScheduledFuture<?> scheduleWithFixedDelay(Runnable task, long delay) {
-		TaskDefine taskDefine = getTaskDefine(task);
-		LOGGER.info("spring task init------taskName:{}, delay:{}", taskDefine.stringKey(), delay);
-		taskDefine.setPeriod(delay);
-		taskDefine.setType(TaskDefine.TASK_TYPE_QSD);
-		addTask(task, taskDefine);
-		return super.scheduleWithFixedDelay(taskWrapper(task), delay);
-	}
 	
 	public String getScheduleServerUUid(){
 		if(null != currenScheduleServer){
@@ -461,22 +430,5 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 		return ZKScheduleManager.applicationcontext;
 	}
 	
-	private TaskDefine getTaskDefine(Runnable task){
-		TaskDefine taskDefine = new TaskDefine();
-		if(task instanceof org.springframework.scheduling.support.ScheduledMethodRunnable){
-			taskDefine.setType(TaskDefine.TASK_TYPE_QS);
-			taskDefine.setStartTime(new Date());
-			org.springframework.scheduling.support.ScheduledMethodRunnable springScheduledMethodRunnable = (org.springframework.scheduling.support.ScheduledMethodRunnable)task;
-			Method targetMethod = springScheduledMethodRunnable.getMethod();
-			String[] beanNames = applicationcontext.getBeanNamesForType(targetMethod.getDeclaringClass());
-	    	if(null != beanNames && StringUtils.isNotEmpty(beanNames[0])){
-	    		taskDefine.setTargetBean(beanNames[0]);
-	    		taskDefine.setTargetMethod(targetMethod.getName());
-	    		LOGGER.info("----------------------name:" + taskDefine.stringKey());
-	    	}
-		}
-		return taskDefine;
-	}
-
 
 }

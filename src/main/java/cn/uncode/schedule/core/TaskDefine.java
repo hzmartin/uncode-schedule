@@ -10,8 +10,16 @@ import java.util.Date;
 public class TaskDefine {
 	
 	public static final String TASK_TYPE_UNCODE="uncode task";
-	public static final String TASK_TYPE_QS="quartz/spring task";
-	public static final String TASK_TYPE_QSD="quartz/spring task delay";
+	
+	/**
+	 * 唯一id，相同的bean，method，可以配置不同的id，传递不同的参数，从而达到Task复用
+	 */
+	private String taskId;
+	
+	/**
+	 * 过期时间
+	 */
+	private Long expire;
 	
     /**
      * 目标bean
@@ -107,7 +115,8 @@ public class TaskDefine {
 	}
 	
 	public String stringKey(){
-		return getTargetBean() + "#" + getTargetMethod();
+		//return getTargetBean() + "#" + getTargetMethod();
+		return getTaskId();
 	}
 
 	public String getParams() {
@@ -126,6 +135,26 @@ public class TaskDefine {
 		this.type = type;
 	}
 
+	public String getTaskId()
+	{
+		return taskId;
+	}
+
+	public void setTaskId(String taskId)
+	{
+		this.taskId = taskId;
+	}
+
+	public Long getExpire()
+	{
+		return expire;
+	}
+
+	public void setExpire(Long expire)
+	{
+		this.expire = expire;
+	}
+
 	public int getRunTimes() {
 		return runTimes;
 	}
@@ -140,6 +169,15 @@ public class TaskDefine {
 
 	public void setLastRunningTime(long lastRunningTime) {
 		this.lastRunningTime = lastRunningTime;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "TaskDefine [taskId=" + taskId + ", expire=" + expire + ", targetBean=" + targetBean + ", targetMethod="
+				+ targetMethod + ", cronExpression=" + cronExpression + ", startTime=" + startTime + ", period="
+				+ period + ", currentServer=" + currentServer + ", params=" + params + ", type=" + type + ", runTimes="
+				+ runTimes + ", lastRunningTime=" + lastRunningTime + "]";
 	}
 	
 	

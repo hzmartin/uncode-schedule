@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -178,18 +179,24 @@ public class ManagerServlet extends HttpServlet{
 		if(StringUtils.isNotEmpty(del)){
 			TaskDefine taskDefine = new TaskDefine();
 			String[] dels = del.split("_");
-			taskDefine.setTargetBean(dels[0]);
-			taskDefine.setTargetMethod(dels[1]);
+			taskDefine.setTaskId(dels[0]);
+			taskDefine.setTargetBean(dels[1]);
+			taskDefine.setTargetMethod(dels[2]);
 			ConsoleManager.delScheduleTask(taskDefine);
 			response.sendRedirect(request.getSession().getServletContext().getContextPath()+"/uncode/schedule");
 		}else if(StringUtils.isNotEmpty(bean) && StringUtils.isNotEmpty(method)){
 			TaskDefine taskDefine = new TaskDefine();
+			taskDefine.setTaskId(UUID.randomUUID().toString());
 			taskDefine.setTargetBean(bean);
 			taskDefine.setTargetMethod(method);
 			taskDefine.setType(TaskDefine.TASK_TYPE_UNCODE);
 			String cronExpression = request.getParameter("cronExpression");
 			if(StringUtils.isNotEmpty(cronExpression)){
 				taskDefine.setCronExpression(cronExpression);
+			}
+			String expire = request.getParameter("expire");
+			if(StringUtils.isNotEmpty(expire)){
+				taskDefine.setExpire(Long.valueOf(expire));
 			}
 			String period = request.getParameter("period");
 			if(StringUtils.isNotEmpty(period)){

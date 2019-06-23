@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.scheduling.Trigger;
-import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
@@ -29,16 +27,6 @@ public class DynamicTaskManager {
 	
 	private static final Map<String, ScheduledFuture<?>> SCHEDULE_FUTURES = new ConcurrentHashMap<String, ScheduledFuture<?>>();
 	
-	
-	/**
-	 * 启动定时任务
-	 * @param taskDefine
-	 * @param currentTime
-	 */
-	public static void scheduleTask(TaskDefine taskDefine, Date currentTime){
-		scheduleTask(taskDefine.getTargetBean(), taskDefine.getTargetMethod(),
-				taskDefine.getCronExpression(), taskDefine.getStartTime(), taskDefine.getPeriod(), taskDefine.getParams());
-	}
 	
 	public static void clearLocalTask(List<String> existsTaskName){
 		for(String name:SCHEDULE_FUTURES.keySet()){
@@ -63,27 +51,34 @@ public class DynamicTaskManager {
 	 * @param startTime
 	 * @param period
 	 */
-	public static void scheduleTask(String targetBean, String targetMethod, String cronExpression, Date startTime, long period, String params){
-		String scheduleKey = buildScheduleKey(targetBean, targetMethod);
+	public static void scheduleTask(TaskDefine taskDefine){
+		String taskId = taskDefine.getTaskId();
+		String targetBean = taskDefine.getTargetBean();
+		String targetMethod = taskDefine.getTargetMethod();
+		String cronExpression = taskDefine.getCronExpression();
+		Date startTime = taskDefine.getStartTime();
+		long period = taskDefine.getPeriod();
+		String params = taskDefine.getParams();
+		String scheduleKey = taskId;
 		try {
 			ScheduledFuture<?> scheduledFuture = null;
-			ScheduledMethodRunnable scheduledMethodRunnable = buildScheduledRunnable(targetBean, targetMethod, params);
+			ScheduledMethodRunnable scheduledMethodRunnable = buildScheduledRunnable(targetBean, targetMethod, params, taskId);
 			if(scheduledMethodRunnable != null){
 				if (!SCHEDULE_FUTURES.containsKey(scheduleKey)) {
 					if(StringUtils.isNotEmpty(cronExpression)){
-						Trigger trigger = new CronTrigger(cronExpression);
-						scheduledFuture = ConsoleManager.getScheduleManager().schedule(scheduledMethodRunnable, trigger);
+						scheduledFuture = ConsoleManager.getScheduleManager().schedule(taskDefine, scheduledMethodRunnable);
 					}else if(startTime != null){
 						if(period > 0){
-							scheduledFuture = ConsoleManager.getScheduleManager().scheduleAtFixedRate(scheduledMethodRunnable, startTime, period);
+							scheduledFuture = ConsoleManager.getScheduleManager().scheduleAtFixedRate(taskDefine, scheduledMethodRunnable);
 						}else{
 							scheduledFuture = ConsoleManager.getScheduleManager().schedule(scheduledMethodRunnable, startTime);
 						}
 					}else if(period > 0){
-						scheduledFuture = ConsoleManager.getScheduleManager().scheduleAtFixedRate(scheduledMethodRunnable, period);
+						scheduledFuture = ConsoleManager.getScheduleManager().scheduleAtFixedRate(taskDefine, scheduledMethodRunnable);
 					}
 					SCHEDULE_FUTURES.put(scheduleKey, scheduledFuture);
-					LOGGER.debug("Building new schedule task, target bean "+ targetBean + " target method " + targetMethod + ".");
+					LOGGER.debug("Building new schedule task(" + taskId + "), target bean " + targetBean
+							+ " target method " + targetMethod + ".");
 				}
 			}else{
 				LOGGER.debug("Bean name is not exists.");
@@ -94,40 +89,27 @@ public class DynamicTaskManager {
 	}
 	
 	
-	private static String buildScheduleKey(String targetBean, String targetMethod){
-		return targetBean + "#" + targetMethod;
-	}
-	
 	/**
 	 * 封装任务对象
 	 * @param targetBean
 	 * @param targetMethod
+	 * @param taskId 
 	 * @return
 	 */
-	private static ScheduledMethodRunnable buildScheduledRunnable(String targetBean, String targetMethod, String params){
+	private static ScheduledMethodRunnable buildScheduledRunnable(String targetBean, String targetMethod, String params, String taskId){
 		Object bean;
 		ScheduledMethodRunnable scheduledMethodRunnable = null;
 		try {
 			bean = ZKScheduleManager.getApplicationcontext().getBean(targetBean);
-			scheduledMethodRunnable = _buildScheduledRunnable(bean, targetMethod, params);
+			scheduledMethodRunnable = _buildScheduledRunnable(bean, targetMethod, params, taskId);
 		} catch (Exception e) {
 			LOGGER.debug(e.getLocalizedMessage(), e);
 		}
 		return scheduledMethodRunnable;
 	}
 
-	private static ScheduledMethodRunnable buildScheduledRunnable(Object bean, String targetMethod, String params){
-		ScheduledMethodRunnable scheduledMethodRunnable = null;
-		try {
-			scheduledMethodRunnable = _buildScheduledRunnable(bean, targetMethod, params);
-		}catch (Exception e){
-			LOGGER.debug(e.getLocalizedMessage(), e);
-		}
-		return scheduledMethodRunnable;
-	}
 
-
-	private static ScheduledMethodRunnable _buildScheduledRunnable(Object bean, String targetMethod, String params) throws Exception {
+	private static ScheduledMethodRunnable _buildScheduledRunnable(Object bean, String targetMethod, String params, String taskId) throws Exception {
 
 		Assert.notNull(bean, "target object must not be null");
 		Assert.hasLength(targetMethod, "Method name must not be empty");
@@ -148,7 +130,7 @@ public class DynamicTaskManager {
 		}
 
 		Assert.notNull(method, "can not find method named " + targetMethod);
-		scheduledMethodRunnable = new ScheduledMethodRunnable(bean, method, params);
+		scheduledMethodRunnable = new ScheduledMethodRunnable(bean, method, params, taskId);
 		return scheduledMethodRunnable;
 	}
 }
