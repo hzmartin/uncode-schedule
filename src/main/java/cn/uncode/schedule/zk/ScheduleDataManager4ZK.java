@@ -484,7 +484,12 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager {
 								Date systime = new Date(getSystemTime());
 								Long expire = taskDefine.getExpire();
 								if(expire != null && expire < systime.getTime()) {
-									LOG.info("skip expire task: " + taskDefine);
+									try {
+										delTask(taskDefine);
+										LOG.info("remove expire task: " + taskDefine);
+									} catch (Exception e) {
+										LOG.error(e.getMessage(), e);
+									}
 									continue;
 								}
 								DynamicTaskManager.scheduleTask(taskDefine);

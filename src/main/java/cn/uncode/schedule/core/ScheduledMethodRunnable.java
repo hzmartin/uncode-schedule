@@ -9,20 +9,23 @@ import org.springframework.util.ReflectionUtils;
 public class ScheduledMethodRunnable implements Runnable
 {
 
-	private String taskId;
+	private final String taskId;
 
 	private final Object target;
 
 	private final Method method;
 
 	private final String params;
+	
+	private final Long expire;
 
-	public ScheduledMethodRunnable(Object target, Method method, String params, String taskId)
+	public ScheduledMethodRunnable(Object target, Method method, String params, String taskId, Long expire)
 	{
 		this.target = target;
 		this.method = method;
 		this.params = params;
 		this.taskId = taskId;
+		this.expire = expire;
 	}
 
 	public Object getTarget()
@@ -38,6 +41,18 @@ public class ScheduledMethodRunnable implements Runnable
 	public String getParams()
 	{
 		return params;
+	}
+	
+
+	public String getTaskId()
+	{
+		return taskId;
+	}
+	
+
+	public Long getExpire()
+	{
+		return expire;
 	}
 
 	@Override
@@ -63,16 +78,6 @@ public class ScheduledMethodRunnable implements Runnable
 		{
 			throw new UndeclaredThrowableException(ex);
 		}
-	}
-
-	public String getTaskId()
-	{
-		return taskId;
-	}
-
-	public void setTaskId(String taskId)
-	{
-		this.taskId = taskId;
 	}
 
 }

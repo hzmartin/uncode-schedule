@@ -58,11 +58,12 @@ public class DynamicTaskManager {
 		String cronExpression = taskDefine.getCronExpression();
 		Date startTime = taskDefine.getStartTime();
 		long period = taskDefine.getPeriod();
+		Long expire = taskDefine.getExpire();
 		String params = taskDefine.getParams();
 		String scheduleKey = taskId;
 		try {
 			ScheduledFuture<?> scheduledFuture = null;
-			ScheduledMethodRunnable scheduledMethodRunnable = buildScheduledRunnable(targetBean, targetMethod, params, taskId);
+			ScheduledMethodRunnable scheduledMethodRunnable = buildScheduledRunnable(targetBean, targetMethod, params, taskId, expire);
 			if(scheduledMethodRunnable != null){
 				if (!SCHEDULE_FUTURES.containsKey(scheduleKey)) {
 					if(StringUtils.isNotEmpty(cronExpression)){
@@ -94,14 +95,15 @@ public class DynamicTaskManager {
 	 * @param targetBean
 	 * @param targetMethod
 	 * @param taskId 
+	 * @param expire 
 	 * @return
 	 */
-	private static ScheduledMethodRunnable buildScheduledRunnable(String targetBean, String targetMethod, String params, String taskId){
+	private static ScheduledMethodRunnable buildScheduledRunnable(String targetBean, String targetMethod, String params, String taskId, Long expire){
 		Object bean;
 		ScheduledMethodRunnable scheduledMethodRunnable = null;
 		try {
 			bean = ZKScheduleManager.getApplicationcontext().getBean(targetBean);
-			scheduledMethodRunnable = _buildScheduledRunnable(bean, targetMethod, params, taskId);
+			scheduledMethodRunnable = _buildScheduledRunnable(bean, targetMethod, params, taskId, expire);
 		} catch (Exception e) {
 			LOGGER.debug(e.getLocalizedMessage(), e);
 		}
@@ -109,7 +111,7 @@ public class DynamicTaskManager {
 	}
 
 
-	private static ScheduledMethodRunnable _buildScheduledRunnable(Object bean, String targetMethod, String params, String taskId) throws Exception {
+	private static ScheduledMethodRunnable _buildScheduledRunnable(Object bean, String targetMethod, String params, String taskId, Long expire) throws Exception {
 
 		Assert.notNull(bean, "target object must not be null");
 		Assert.hasLength(targetMethod, "Method name must not be empty");
@@ -130,7 +132,7 @@ public class DynamicTaskManager {
 		}
 
 		Assert.notNull(method, "can not find method named " + targetMethod);
-		scheduledMethodRunnable = new ScheduledMethodRunnable(bean, method, params, taskId);
+		scheduledMethodRunnable = new ScheduledMethodRunnable(bean, method, params, taskId, expire);
 		return scheduledMethodRunnable;
 	}
 }

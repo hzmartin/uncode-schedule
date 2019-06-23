@@ -27,9 +27,10 @@ public class ManagerServlet extends HttpServlet{
 	 */
 	private static final long serialVersionUID = 8160082230341182715L;
 	
+	private static final String HTML = "<!DOCTYPE html>\n"+
+		    "<html>\n %s \n</html>";
+	
 	private static final String HEAD = 
-		    "<!DOCTYPE html>\n"+
-		    "<html>\n"+
 		    "<head>\n"+
 		    "<meta charset=\"utf-8\"/>\n"+
 		    "\t  <title>Uncode-Schedule管理</title>\n"+
@@ -100,15 +101,27 @@ public class ManagerServlet extends HttpServlet{
 			"\t 										</div>\n"+
 			"\t 									</div>\n"+
 			"\t 									<div class=\"form-group\">\n"+
-			"\t 										<label class=\"col-sm-4 control-label\" for=\"startTime\">开始时间</label>\n"+
+			"\t 										<label class=\"col-sm-4 control-label\" for=\"startTime\">开始时间（毫秒）</label>\n"+
 			"\t 										<div class=\"col-sm-6\">\n"+
 			"\t 											<input id=\"startTime\" name=\"startTime\" type=\"text\" class=\"form-control\" required>\n"+
+			"\t 										</div>\n"+
+			"\t 									</div>\n"+
+			"\t 									<div class=\"form-group\">\n"+
+			"\t 										<label class=\"col-sm-4 control-label\" for=\"expire\">过期时间（毫秒）</label>\n"+
+			"\t 										<div class=\"col-sm-6\">\n"+
+			"\t 											<input id=\"expire\" name=\"expire\" type=\"text\" class=\"form-control\" required>\n"+
 			"\t 										</div>\n"+
 			"\t 									</div>\n"+
 			"\t 									<div class=\"form-group\">\n"+
 			"\t 										<label class=\"col-sm-4 control-label\" for=\"param\">参数(字符串)</label>\n"+
 			"\t 										<div class=\"col-sm-6\">\n"+
 			"\t 											<input id=\"param\" name=\"param\" type=\"text\" class=\"form-control\" required>\n"+
+			"\t 										</div>\n"+
+			"\t 									</div>\n"+
+			"\t 									<div class=\"form-group\">\n"+
+			"\t 										<label class=\"col-sm-4 control-label\" for=\"remark\">备注(字符串)</label>\n"+
+			"\t 										<div class=\"col-sm-6\">\n"+
+			"\t 											<input id=\"remark\" name=\"remark\" type=\"text\" class=\"form-control\" required>\n"+
 			"\t 										</div>\n"+
 			"\t 									</div>\n"+
 			"\t              		   				<div class=\"modal-footer\">\n"+
@@ -158,6 +171,8 @@ public class ManagerServlet extends HttpServlet{
 			"\t 						<th>执行节点</th>\n"+
 			"\t 						<th>执行次数</th>\n"+
 			"\t 						<th>最近执行时间</th>\n"+
+			"\t 						<th>过期时间</th>\n"+
+			"\t 						<th>备注</th>\n"+
 			"\t 						<th>操作</th>\n"+
 			"\t 					</tr>\n"+
 			"\t 				</thead>\n"+
@@ -201,6 +216,10 @@ public class ManagerServlet extends HttpServlet{
 			String period = request.getParameter("period");
 			if(StringUtils.isNotEmpty(period)){
 				taskDefine.setPeriod(Long.valueOf(period));
+			}
+			String remark = request.getParameter("remark");
+			if(StringUtils.isNotEmpty(remark)){
+				taskDefine.setRemark(remark);
 			}
 			String startTime = request.getParameter("startTime");
 			if(StringUtils.isNotEmpty(startTime)){
@@ -259,8 +278,21 @@ public class ManagerServlet extends HttpServlet{
 	    			}else{
 	    				sbTask.append("<td>").append("-").append("</td>");
 	    			}
+	    			if(taskDefine.getExpire() != null){
+	    				Date date = new Date(taskDefine.getExpire());
+		    			sbTask.append("<td>").append(sdf.format(date)).append("</td>");
+	    			}else{
+	    				sbTask.append("<td>").append("-").append("</td>");
+	    			}
+	    			if(StringUtils.isNotBlank(taskDefine.getRemark())){
+		    			sbTask.append("<td>").append(taskDefine.getRemark()).append("</td>");
+	    			}else{
+	    				sbTask.append("<td>").append("-").append("</td>");
+	    			}
 	    			sbTask.append("<td>").append("<a href=\"").append(request.getSession().getServletContext().getContextPath())
 	    			  				 .append("/uncode/schedule?del=")
+	    			  				 .append(taskDefine.getTaskId())
+	    			  				 .append("_")
 	    			                 .append(taskDefine.getTargetBean())
 	    			                 .append("_")
 	    			                 .append(taskDefine.getTargetMethod())
@@ -268,10 +300,11 @@ public class ManagerServlet extends HttpServlet{
 	    			                 .append("</td>");
 					sbTask.append("</tr>");
 	    		}
-	    		 out.write(HEAD);
-	    		 out.write(SCRIPT);
-	    		 out.write(String.format(PAGE, request.getSession().getServletContext().getContextPath()+"/uncode/schedule", 
-	    				sb.toString(), sbTask.toString()));
+				String BODY = String.format(PAGE,
+						request.getSession().getServletContext().getContextPath() + "/uncode/schedule", sb.toString(),
+						sbTask.toString());
+				out.write(String.format(HTML, HEAD + SCRIPT + BODY));
+				out.flush();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

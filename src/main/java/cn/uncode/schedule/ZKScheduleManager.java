@@ -256,11 +256,18 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 		return new Runnable(){
 			public void run(){
 				String taskId = null;
+				Long expire = null;
 				if(task instanceof ScheduledMethodRunnable){
 					ScheduledMethodRunnable uncodeScheduledMethodRunnable = (ScheduledMethodRunnable)task;
 					taskId = uncodeScheduledMethodRunnable.getTaskId();
+					expire = uncodeScheduledMethodRunnable.getExpire();
 				}
 		    	if(StringUtils.isNotEmpty(taskId)){
+		    		Long now = System.currentTimeMillis();
+		    		if(expire != null && expire < now) {
+						LOGGER.debug("Job(" + taskId + ") has been expired");
+		    			return;
+		    		}
 		    		String name = taskId;
 		    		boolean isOwner = false;
 					try {
@@ -279,7 +286,7 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 						if(isOwner){
 			    			task.run();
 			    			scheduleDataManager.saveRunningInfo(name, currenScheduleServer.getUuid());
-			    			LOGGER.info("Job has been executed.");
+							LOGGER.info("Job(" + taskId + ") has been executed.");
 			    		}
 					} catch (Exception e) {
 						LOGGER.error("Check task owner error.", e);

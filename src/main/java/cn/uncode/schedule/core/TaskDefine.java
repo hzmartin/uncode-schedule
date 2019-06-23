@@ -21,6 +21,11 @@ public class TaskDefine {
 	 */
 	private Long expire;
 	
+	/**
+	 * 备注
+	 */
+	private String remark;
+	
     /**
      * 目标bean
      */
@@ -178,6 +183,16 @@ public class TaskDefine {
 				+ targetMethod + ", cronExpression=" + cronExpression + ", startTime=" + startTime + ", period="
 				+ period + ", currentServer=" + currentServer + ", params=" + params + ", type=" + type + ", runTimes="
 				+ runTimes + ", lastRunningTime=" + lastRunningTime + "]";
+	}
+
+	public String getRemark()
+	{
+		return remark;
+	}
+
+	public void setRemark(String remark)
+	{
+		this.remark = remark;
 	}
 	
 	
