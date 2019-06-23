@@ -197,7 +197,7 @@ public class ManagerServlet extends HttpServlet{
 			}
 			String startTime = request.getParameter("startTime");
 			if(StringUtils.isNotEmpty(startTime)){
-				taskDefine.setStartTime(new Date());
+				taskDefine.setStartTime(new Date(Long.valueOf(startTime)));
 			}
 			String param = request.getParameter("param");
 			if(StringUtils.isNotEmpty(param)){
