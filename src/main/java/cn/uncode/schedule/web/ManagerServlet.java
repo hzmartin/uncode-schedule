@@ -193,11 +193,12 @@ public class ManagerServlet extends HttpServlet{
 		String method = request.getParameter("method");
 		if(StringUtils.isNotEmpty(del)){
 			TaskDefine taskDefine = new TaskDefine();
-			String[] dels = del.split("_");
-			taskDefine.setTaskId(dels[0]);
-			taskDefine.setTargetBean(dels[1]);
-			taskDefine.setTargetMethod(dels[2]);
-			ConsoleManager.delScheduleTask(taskDefine);
+			taskDefine.setTaskId(del);
+			try {
+				ConsoleManager.delScheduleTask(taskDefine);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			response.sendRedirect(request.getSession().getServletContext().getContextPath()+"/uncode/schedule");
 		}else if(StringUtils.isNotEmpty(bean) && StringUtils.isNotEmpty(method)){
 			TaskDefine taskDefine = new TaskDefine();
@@ -292,10 +293,6 @@ public class ManagerServlet extends HttpServlet{
 	    			sbTask.append("<td>").append("<a href=\"").append(request.getSession().getServletContext().getContextPath())
 	    			  				 .append("/uncode/schedule?del=")
 	    			  				 .append(taskDefine.getTaskId())
-	    			  				 .append("_")
-	    			                 .append(taskDefine.getTargetBean())
-	    			                 .append("_")
-	    			                 .append(taskDefine.getTargetMethod())
 	    			                 .append("\" >删除</a>")
 	    			                 .append("</td>");
 					sbTask.append("</tr>");

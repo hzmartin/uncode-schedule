@@ -33,12 +33,8 @@ public class ConsoleManager {
 		ConsoleManager.getScheduleManager().getScheduleDataManager().addTask(taskDefine);
     }
     
-    public static void delScheduleTask(TaskDefine taskDefine) {
-        try {
-			ConsoleManager.scheduleManager.getScheduleDataManager().delTask(taskDefine);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		}
+    public static void delScheduleTask(TaskDefine taskDefine) throws Exception {
+		ConsoleManager.scheduleManager.getScheduleDataManager().delTask(taskDefine);
     }
     
     public static List<TaskDefine> queryScheduleTask() {
@@ -53,7 +49,7 @@ public class ConsoleManager {
     }
     
     public static boolean isExistsTask(TaskDefine taskDefine) throws Exception{
-    		return ConsoleManager.scheduleManager.getScheduleDataManager().isExistsTask(taskDefine);
+    	return ConsoleManager.scheduleManager.getScheduleDataManager().isExistsTask(taskDefine);
     }
     
     /**
