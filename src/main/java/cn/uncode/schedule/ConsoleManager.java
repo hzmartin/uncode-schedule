@@ -34,7 +34,7 @@ public class ConsoleManager {
     }
     
     public static void delScheduleTask(TaskDefine taskDefine) throws Exception {
-		ConsoleManager.scheduleManager.getScheduleDataManager().delTask(taskDefine);
+		ConsoleManager.getScheduleManager().getScheduleDataManager().delTask(taskDefine);
     }
     
     public static List<TaskDefine> queryScheduleTask() {
@@ -49,7 +49,7 @@ public class ConsoleManager {
     }
     
     public static boolean isExistsTask(TaskDefine taskDefine) throws Exception{
-    	return ConsoleManager.scheduleManager.getScheduleDataManager().isExistsTask(taskDefine);
+    	return ConsoleManager.getScheduleManager().getScheduleDataManager().isExistsTask(taskDefine);
     }
     
     /**
@@ -92,7 +92,7 @@ public class ConsoleManager {
 	}
     
     public static List<String> getServerIps() throws Exception{
-    	return scheduleManager.loadScheduleServerIps();
+    	return getScheduleManager().loadScheduleServerIps();
     }
     
 }

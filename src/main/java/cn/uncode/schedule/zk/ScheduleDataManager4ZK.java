@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
@@ -521,7 +520,7 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager
 				}
 				else
 				{
-					LOG.info("invalid job: " + child);
+					LOG.debug("invalid job: " + child);
 					continue;
 				}
 
@@ -560,29 +559,38 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager
 					{
 						String taskPath = zkPath + "/" + taskName;
 						byte[] data = this.getZooKeeper().getData(taskPath, null, null);
+						ownerTask.add(taskName);
 						if (null != data)
 						{
 							String json = new String(data);
 							TaskDefine taskDefine = this.gson.fromJson(json, TaskDefine.class);
-							if (TaskDefine.TASK_TYPE_UNCODE.equals(taskDefine.getType()))
+							Date systime = new Date(getSystemTime());
+							Long expire = taskDefine.getExpire();
+							if (expire != null && expire < systime.getTime())
 							{
-								ownerTask.add(taskName);
-								Date systime = new Date(getSystemTime());
-								Long expire = taskDefine.getExpire();
-								if (expire != null && expire < systime.getTime())
+								try
 								{
-									try
-									{
-										delTask(taskDefine);
-										LOG.info("remove expire task: " + taskDefine);
-									}
-									catch (Exception e)
-									{
-										LOG.error(e.getMessage(), e);
-									}
-									continue;
+									delTask(taskDefine);
+									LOG.info("remove expire task: " + taskDefine);
 								}
-								DynamicTaskManager.scheduleTask(taskDefine);
+								catch (Exception e)
+								{
+									LOG.error("remove expire task fail: " + taskName, e);
+								}
+								continue;
+							}
+							DynamicTaskManager.scheduleTask(taskDefine);
+						} else {
+							try
+							{
+								TaskDefine taskDefine = new TaskDefine();
+								taskDefine.setTaskId(taskName);
+								delTask(taskDefine);
+								LOG.info("remove expire task: " + taskDefine);
+							}
+							catch (Exception e)
+							{
+								LOG.error("remove invalid task fail: " + taskName, e);
 							}
 						}
 					}
