@@ -586,7 +586,7 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager
 								TaskDefine taskDefine = new TaskDefine();
 								taskDefine.setTaskId(taskName);
 								delTask(taskDefine);
-								LOG.info("remove expire task: " + taskDefine);
+								LOG.info("remove invalid task: " + taskDefine);
 							}
 							catch (Exception e)
 							{

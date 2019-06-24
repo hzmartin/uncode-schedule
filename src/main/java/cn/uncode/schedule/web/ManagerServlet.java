@@ -89,7 +89,7 @@ public class ManagerServlet extends HttpServlet{
 			"\t 										</div>\n"+
 			"\t 									</div>\n"+
 			"\t 									<div class=\"form-group\">\n"+
-			"\t 										<label class=\"col-sm-4 control-label\" for=\"cronExpression\">corn表达式</label>\n"+
+			"\t 										<label class=\"col-sm-4 control-label\" for=\"cronExpression\">cron表达式</label>\n"+
 			"\t 										<div class=\"col-sm-6\">\n"+
 			"\t 											<input id=\"cronExpression\" name=\"cronExpression\" type=\"text\" class=\"form-control\" required>\n"+
 			"\t 										</div>\n"+
