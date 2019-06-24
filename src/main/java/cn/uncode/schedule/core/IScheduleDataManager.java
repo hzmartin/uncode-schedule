@@ -44,15 +44,6 @@ public interface IScheduleDataManager{
 	
 	public void addTask(TaskDefine taskDefine)throws Exception;
 	
-	/**
-	 * addTask中存储的Key由对象本身的字符串组成，此方法实现重载
-	 * @param targetBean
-	 * @param targetMethod
-	 * @throws Exception
-	 */
-	@Deprecated
-	public void delTask(String targetBean, String targetMethod)throws Exception;
-	
 	public void delTask(TaskDefine taskDefine) throws Exception;
 	
 	public List<TaskDefine> selectTask()throws Exception;
