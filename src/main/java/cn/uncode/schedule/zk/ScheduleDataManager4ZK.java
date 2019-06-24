@@ -175,7 +175,7 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager
 				if (getSystemTime() - stat.getMtime() > SERVER_EXPIRE_TIME)
 				{
 					ZKTools.deleteTree(this.getZooKeeper(), zkPath + "/" + name);
-					LOG.debug("ScheduleServer[" + zkPath + "/" + name + "]过期清除");
+					LOG.info("ScheduleServer[" + zkPath + "/" + name + "]过期清除");
 				}
 			}
 			catch (Exception e)
