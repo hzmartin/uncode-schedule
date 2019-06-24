@@ -171,6 +171,7 @@ public class ManagerServlet extends HttpServlet{
 			"\t 						<th>执行节点</th>\n"+
 			"\t 						<th>执行次数</th>\n"+
 			"\t 						<th>最近执行时间</th>\n"+
+			"\t 						<th>下次执行时间</th>\n"+
 			"\t 						<th>过期时间</th>\n"+
 			"\t 						<th>备注</th>\n"+
 			"\t 						<th>操作</th>\n"+
@@ -264,7 +265,7 @@ public class ManagerServlet extends HttpServlet{
 	    		for(int i=0; i< tasks.size();i++){
 	    			TaskDefine taskDefine = tasks.get(i);
 	    			sbTask.append("<tr class=\"info\">")
-	    			  .append("<td>").append(i+1).append("</td>")
+	    			  .append("<td>").append(taskDefine.getTaskId()).append("</td>")
 	    			  .append("<td>").append(taskDefine.getTargetBean()).append("</td>")
 	    			  .append("<td>").append(taskDefine.getTargetMethod()).append("</td>")
 	    			  .append("<td>").append(taskDefine.getType()).append("</td>")
@@ -276,6 +277,12 @@ public class ManagerServlet extends HttpServlet{
 	    			if(taskDefine.getLastRunningTime() > 0){
 	    				Date date = new Date(taskDefine.getLastRunningTime());
 		    			sbTask.append("<td>").append(sdf.format(date)).append("</td>");
+	    			}else{
+	    				sbTask.append("<td>").append("-").append("</td>");
+	    			}
+	    			Date nextExecutionTime = taskDefine.nextExecutionTime();
+					if(nextExecutionTime != null){
+		    			sbTask.append("<td>").append(sdf.format(nextExecutionTime)).append("</td>");
 	    			}else{
 	    				sbTask.append("<td>").append("-").append("</td>");
 	    			}

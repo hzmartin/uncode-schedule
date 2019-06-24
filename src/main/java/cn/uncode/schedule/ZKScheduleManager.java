@@ -391,7 +391,7 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 		}
 	}
 	
-	public ScheduledFuture<?> schedule(TaskDefine taskDefine, Runnable task) {
+	public ScheduledFuture<?> scheduleCron(TaskDefine taskDefine, Runnable task) {
 		Trigger cronTrigger = new CronTrigger(taskDefine.getCronExpression());
 		LOGGER.info("spring task init------trigger:" + taskDefine.getCronExpression());
 		addTask(task, taskDefine);

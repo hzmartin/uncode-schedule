@@ -67,7 +67,7 @@ public class DynamicTaskManager {
 			if(scheduledMethodRunnable != null){
 				if (!SCHEDULE_FUTURES.containsKey(scheduleKey)) {
 					if(StringUtils.isNotEmpty(cronExpression)){
-						scheduledFuture = ConsoleManager.getScheduleManager().schedule(taskDefine, scheduledMethodRunnable);
+						scheduledFuture = ConsoleManager.getScheduleManager().scheduleCron(taskDefine, scheduledMethodRunnable);
 					}else if(startTime != null){
 						if(period > 0){
 							scheduledFuture = ConsoleManager.getScheduleManager().scheduleAtFixedRate(taskDefine, scheduledMethodRunnable);

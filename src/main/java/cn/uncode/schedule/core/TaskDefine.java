@@ -2,141 +2,165 @@ package cn.uncode.schedule.core;
 
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.scheduling.support.PeriodicTrigger;
+import org.springframework.scheduling.support.SimpleTriggerContext;
+
 /**
  * 任务定义，提供关键信息给使用者
  * @author juny.ye
  *
  */
-public class TaskDefine {
-	
-	public static final String TASK_TYPE_UNCODE="uncode task";
-	
+public class TaskDefine
+{
+
+	public static final String TASK_TYPE_UNCODE = "uncode task";
+
 	/**
 	 * 唯一id，相同的bean，method，可以配置不同的id，传递不同的参数，从而达到Task复用
 	 */
 	private String taskId;
-	
+
 	/**
 	 * 过期时间
 	 */
 	private Long expire;
-	
+
 	/**
 	 * 备注
 	 */
 	private String remark;
-	
-    /**
-     * 目标bean
-     */
-    private String targetBean;
-    
-    /**
-     * 目标方法
-     */
-    private String targetMethod;
-    
-    /**
-     * cron表达式
-     */
-    private String cronExpression;
-	
+
+	/**
+	 * 目标bean
+	 */
+	private String targetBean;
+
+	/**
+	 * 目标方法
+	 */
+	private String targetMethod;
+
+	/**
+	 * cron表达式
+	 */
+	private String cronExpression;
+
 	/**
 	 * 开始时间
 	 */
 	private Date startTime;
-	
+
 	/**
 	 * 周期（毫秒）
 	 */
 	private long period;
-	
+
 	private String currentServer;
-	
+
 	/**
 	 * 参数
 	 */
 	private String params;
-	
+
 	/**
 	 * 类型
 	 */
 	private String type;
-	
+
 	private int runTimes;
-	
+
 	private long lastRunningTime;
-	
-	public boolean begin(Date sysTime) {
+
+	public boolean begin(Date sysTime)
+	{
 		return null != sysTime && sysTime.after(startTime);
 	}
 
-	public String getTargetBean() {
+	public String getTargetBean()
+	{
 		return targetBean;
 	}
 
-	public void setTargetBean(String targetBean) {
+	public void setTargetBean(String targetBean)
+	{
 		this.targetBean = targetBean;
 	}
 
-	public String getTargetMethod() {
+	public String getTargetMethod()
+	{
 		return targetMethod;
 	}
 
-	public void setTargetMethod(String targetMethod) {
+	public void setTargetMethod(String targetMethod)
+	{
 		this.targetMethod = targetMethod;
 	}
 
-	public String getCronExpression() {
+	public String getCronExpression()
+	{
 		return cronExpression;
 	}
 
-	public void setCronExpression(String cronExpression) {
+	public void setCronExpression(String cronExpression)
+	{
 		this.cronExpression = cronExpression;
 	}
 
-	public Date getStartTime() {
+	public Date getStartTime()
+	{
 		return startTime;
 	}
 
-	public void setStartTime(Date startTime) {
+	public void setStartTime(Date startTime)
+	{
 		this.startTime = startTime;
 	}
 
-	public long getPeriod() {
+	public long getPeriod()
+	{
 		return period;
 	}
 
-	public void setPeriod(long period) {
+	public void setPeriod(long period)
+	{
 		this.period = period;
 	}
 
-	public String getCurrentServer() {
+	public String getCurrentServer()
+	{
 		return currentServer;
 	}
 
-	public void setCurrentServer(String currentServer) {
+	public void setCurrentServer(String currentServer)
+	{
 		this.currentServer = currentServer;
 	}
-	
-	public String stringKey(){
+
+	public String stringKey()
+	{
 		//return getTargetBean() + "#" + getTargetMethod();
 		return getTaskId();
 	}
 
-	public String getParams() {
+	public String getParams()
+	{
 		return params;
 	}
 
-	public void setParams(String params) {
+	public void setParams(String params)
+	{
 		this.params = params;
 	}
 
-	public String getType() {
+	public String getType()
+	{
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(String type)
+	{
 		this.type = type;
 	}
 
@@ -160,19 +184,23 @@ public class TaskDefine {
 		this.expire = expire;
 	}
 
-	public int getRunTimes() {
+	public int getRunTimes()
+	{
 		return runTimes;
 	}
 
-	public void setRunTimes(int runTimes) {
+	public void setRunTimes(int runTimes)
+	{
 		this.runTimes = runTimes;
 	}
 
-	public long getLastRunningTime() {
+	public long getLastRunningTime()
+	{
 		return lastRunningTime;
 	}
 
-	public void setLastRunningTime(long lastRunningTime) {
+	public void setLastRunningTime(long lastRunningTime)
+	{
 		this.lastRunningTime = lastRunningTime;
 	}
 
@@ -194,6 +222,28 @@ public class TaskDefine {
 	{
 		this.remark = remark;
 	}
-	
-	
+
+	public Date nextExecutionTime()
+	{
+		Date date = new Date();
+		if (lastRunningTime > 0)
+		{
+			date = new Date(lastRunningTime);
+		}
+		SimpleTriggerContext triggerContext = new SimpleTriggerContext();
+		triggerContext.update(date, date, date);
+		if (StringUtils.isNotBlank(cronExpression))
+		{
+			CronTrigger cron = new CronTrigger(cronExpression);
+			return cron.nextExecutionTime(triggerContext);
+		}
+		else if (period > 0)
+		{
+			PeriodicTrigger periodTrigger = new PeriodicTrigger(period);
+			return periodTrigger.nextExecutionTime(triggerContext);
+		}
+
+		return null;
+	}
+
 }
