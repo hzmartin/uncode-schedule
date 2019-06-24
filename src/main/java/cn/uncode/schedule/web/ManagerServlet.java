@@ -157,7 +157,7 @@ public class ManagerServlet extends HttpServlet{
 			"\t 			</table>\n"+
 			"\t 		</div>\n"+
 			"\t 		<div class=\"span12\">\n"+
-			"\t 			<h3>定时任务列表</h3>\n"+
+			"\t 			<h3>定时任务列表(数量：%s)</h3>\n"+
 			"\t 			<table class=\"table\">\n"+
 			"\t 				<thead>\n"+
 			"\t 					<tr>\n"+
@@ -192,6 +192,7 @@ public class ManagerServlet extends HttpServlet{
 		String del = request.getParameter("del");
 		String bean = request.getParameter("bean");
 		String method = request.getParameter("method");
+		String action = request.getSession().getServletContext().getContextPath() + "/uncode/schedule";
 		if(StringUtils.isNotEmpty(del)){
 			TaskDefine taskDefine = new TaskDefine();
 			taskDefine.setTaskId(del);
@@ -200,7 +201,7 @@ public class ManagerServlet extends HttpServlet{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			response.sendRedirect(request.getSession().getServletContext().getContextPath()+"/uncode/schedule");
+			response.sendRedirect(action);
 		}else if(StringUtils.isNotEmpty(bean) && StringUtils.isNotEmpty(method)){
 			TaskDefine taskDefine = new TaskDefine();
 			taskDefine.setTaskId(UUID.randomUUID().toString());
@@ -238,25 +239,25 @@ public class ManagerServlet extends HttpServlet{
 					e.printStackTrace();
 				}
 			}
-			response.sendRedirect(request.getSession().getServletContext().getContextPath()+"/uncode/schedule");
+			response.sendRedirect(action);
 		}
 		try {
 			List<String> servers = ConsoleManager.getScheduleManager().getScheduleDataManager().loadScheduleServerNames();
 			if(servers != null){
 				response.setContentType("text/html;charset=UTF-8");
 		        PrintWriter out = response.getWriter();  
-		        StringBuffer sb = new StringBuffer();
+		        StringBuffer clusterInfo = new StringBuffer();
 	    		for(int i=0; i< servers.size();i++){
 	    			String ser = servers.get(i);
-	    			sb.append("<tr class=\"info\">")
+	    			clusterInfo.append("<tr class=\"info\">")
 	    			  .append("<td>").append(i+1).append("</td>")
 	    			  .append("<td>").append(ser).append("</td>");
 					if( ConsoleManager.getScheduleManager().getScheduleDataManager().isLeader(ser, servers)){
-						sb.append("<td>").append("是").append("</td>");
+						clusterInfo.append("<td>").append("是").append("</td>");
 					}else{
-						sb.append("<td>").append("否").append("</td>");
+						clusterInfo.append("<td>").append("否").append("</td>");
 					}
-	    			sb.append("</tr>");
+	    			clusterInfo.append("</tr>");
 	    		}
 	    		
 	    		List<TaskDefine> tasks = ConsoleManager.queryScheduleTask();
@@ -304,9 +305,7 @@ public class ManagerServlet extends HttpServlet{
 	    			                 .append("</td>");
 					sbTask.append("</tr>");
 	    		}
-				String BODY = String.format(PAGE,
-						request.getSession().getServletContext().getContextPath() + "/uncode/schedule", sb.toString(),
-						sbTask.toString());
+				String BODY = String.format(PAGE, action, clusterInfo.toString(), tasks.size(), sbTask.toString());
 				out.write(String.format(HTML, HEAD + SCRIPT + BODY));
 				out.flush();
 			}
