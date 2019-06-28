@@ -19,7 +19,7 @@ import cn.uncode.schedule.ConsoleManager;
 import cn.uncode.schedule.core.TaskDefine;
 
 
-@WebServlet(name="schedule",urlPatterns="/uncode/schedule")
+@WebServlet(name="schedule",urlPatterns="/yixintask/schedule")
 public class ManagerServlet extends HttpServlet{
 
 	/**
@@ -192,7 +192,7 @@ public class ManagerServlet extends HttpServlet{
 		String del = request.getParameter("del");
 		String bean = request.getParameter("bean");
 		String method = request.getParameter("method");
-		String action = request.getSession().getServletContext().getContextPath() + "/uncode/schedule";
+		String action = request.getSession().getServletContext().getContextPath() + "/yixintask/schedule";
 		if(StringUtils.isNotEmpty(del)){
 			TaskDefine taskDefine = new TaskDefine();
 			taskDefine.setTaskId(del);
@@ -299,7 +299,7 @@ public class ManagerServlet extends HttpServlet{
 	    				sbTask.append("<td>").append("-").append("</td>");
 	    			}
 	    			sbTask.append("<td>").append("<a href=\"").append(request.getSession().getServletContext().getContextPath())
-	    			  				 .append("/uncode/schedule?del=")
+	    			  				 .append("/yixintask/schedule?del=")
 	    			  				 .append(taskDefine.getTaskId())
 	    			                 .append("\" >删除</a>")
 	    			                 .append("</td>");
