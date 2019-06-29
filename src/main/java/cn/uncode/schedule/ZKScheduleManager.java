@@ -258,10 +258,12 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 			public void run(){
 				String taskId = null;
 				Long expire = null;
+				TaskDefine taskDefine = null;
 				if(task instanceof ScheduledMethodRunnable){
 					ScheduledMethodRunnable uncodeScheduledMethodRunnable = (ScheduledMethodRunnable)task;
 					taskId = uncodeScheduledMethodRunnable.getTaskId();
 					expire = uncodeScheduledMethodRunnable.getExpire();
+					taskDefine = uncodeScheduledMethodRunnable.getTaskDefine();
 				}
 		    	if(StringUtils.isNotEmpty(taskId)){
 		    		Long now = System.currentTimeMillis();
@@ -286,7 +288,7 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 						}
 						if(isOwner){
 							TaskLogBean.start();
-							TaskLogBean.get().setTask(task);
+							TaskLogBean.get().setTaskDefine(taskDefine);
 			    			task.run();
 			    			scheduleDataManager.saveRunningInfo(name, currenScheduleServer.getUuid());
 							TaskLogBean.end();

@@ -6,12 +6,14 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.uncode.schedule.core.TaskDefine;
+
 public class TaskLogBean
 {
 
 	private static final Logger logger = LoggerFactory.getLogger(TaskLogBean.class);
 
-	private Runnable task;
+	private TaskDefine taskDefine;
 
 	private long begintime = 0;
 
@@ -165,14 +167,16 @@ public class TaskLogBean
 		this.msg = msg;
 	}
 
-	public Runnable getTask()
+	public TaskDefine getTaskDefine()
 	{
-		return task;
+		return taskDefine;
 	}
 
-	public void setTask(Runnable task)
+	public void setTaskDefine(TaskDefine taskDefine)
 	{
-		this.task = task;
+		this.taskDefine = taskDefine;
 	}
+
+	
 
 }
