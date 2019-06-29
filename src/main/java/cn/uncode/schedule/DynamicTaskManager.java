@@ -72,7 +72,7 @@ public class DynamicTaskManager {
 						if(period > 0){
 							scheduledFuture = ConsoleManager.getScheduleManager().scheduleAtFixedRate(taskDefine, scheduledMethodRunnable);
 						}else{
-							scheduledFuture = ConsoleManager.getScheduleManager().schedule(scheduledMethodRunnable, startTime);
+							scheduledFuture = ConsoleManager.getScheduleManager().scheduleByStartTime(taskDefine, scheduledMethodRunnable);
 						}
 					}else if(period > 0){
 						scheduledFuture = ConsoleManager.getScheduleManager().scheduleAtFixedRate(taskDefine, scheduledMethodRunnable);

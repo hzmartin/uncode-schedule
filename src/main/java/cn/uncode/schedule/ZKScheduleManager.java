@@ -25,6 +25,7 @@ import cn.uncode.schedule.core.ScheduleServer;
 import cn.uncode.schedule.core.ScheduledMethodRunnable;
 import cn.uncode.schedule.core.TaskDefine;
 import cn.uncode.schedule.util.ScheduleUtil;
+import cn.uncode.schedule.util.TaskLogBean;
 import cn.uncode.schedule.zk.ScheduleDataManager4ZK;
 import cn.uncode.schedule.zk.ZKManager;
 
@@ -284,9 +285,11 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 							}
 						}
 						if(isOwner){
+							TaskLogBean.start();
+							TaskLogBean.get().setTask(task);
 			    			task.run();
 			    			scheduleDataManager.saveRunningInfo(name, currenScheduleServer.getUuid());
-							LOGGER.info("Job(" + taskId + ") has been executed.");
+							TaskLogBean.end();
 			    		}
 					} catch (Exception e) {
 						LOGGER.error("Check task owner error.", e);
@@ -393,22 +396,18 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 	
 	public ScheduledFuture<?> scheduleCron(TaskDefine taskDefine, Runnable task) {
 		Trigger cronTrigger = new CronTrigger(taskDefine.getCronExpression());
-		LOGGER.info("spring task init------trigger:" + taskDefine.getCronExpression());
 		addTask(task, taskDefine);
 		return super.schedule(taskWrapper(task), cronTrigger);
 	}
 
 	public ScheduledFuture<?> scheduleByStartTime(TaskDefine taskDefine,Runnable task) {
 		Date startTime = taskDefine.getStartTime();
-		LOGGER.info("spring task init------taskName:{}, period:{}", taskDefine.stringKey(), startTime);
 		addTask(task, taskDefine);
-		logger.debug("start schedule: " + task);
 		return super.schedule(taskWrapper(task), startTime);
 	}
 
 	public ScheduledFuture<?> scheduleAtFixedRate(TaskDefine taskDefine, Runnable task) {
 		long period = taskDefine.getPeriod();
-		LOGGER.info("spring task init------taskName:{}, period:{}", taskDefine.stringKey(), period);
 		addTask(task, taskDefine);
 		Date startTime = taskDefine.getStartTime();
 		if(startTime == null) {
