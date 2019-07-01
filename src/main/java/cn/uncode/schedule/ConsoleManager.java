@@ -37,6 +37,17 @@ public class ConsoleManager {
 		ConsoleManager.getScheduleManager().getScheduleDataManager().delTask(taskDefine);
     }
     
+    public static List<TaskDefine> queryScheduleTask(String type) {
+    	List<TaskDefine> results = new ArrayList<>();
+    	List<TaskDefine> tasks = queryScheduleTask();
+    	for (TaskDefine taskDefine : tasks) {
+    		if(taskDefine.getType().equals(type)) {
+    			results.add(taskDefine);
+    		}
+		}
+    	return results;
+    }
+    
     public static List<TaskDefine> queryScheduleTask() {
     	List<TaskDefine> taskDefines = new ArrayList<TaskDefine>();
         try {
