@@ -311,8 +311,13 @@ public class ZKScheduleManager extends ThreadPoolTaskScheduler implements Applic
 
 		public void run() {
 			try {
+				long start = System.currentTimeMillis();
 				Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 				manager.refreshScheduleServer();
+				long cost = System.currentTimeMillis() - start;
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("心跳任务单次耗时： " + cost + "(ms)");
+				}
 			} catch (Exception ex) {
 				log.error(ex.getMessage(), ex);
 			}
