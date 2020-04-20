@@ -160,22 +160,7 @@
 
 	</dependencies>
 	
-	
-	<!-- Distribution Repositories -->
-    <distributionManagement>
-        <!-- repository for released products -->
-        <repository>
-            <id>artifactory</id>
-            <name>Netease Repository</name>
-            <url>http://mvn.hz.netease.com/artifactory/libs-releases</url>
-        </repository>
-        <!-- repository for products' snapshotelopment snapshots -->
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>Netease Snaptshot Repository</name>
-            <url>http://mvn.hz.netease.com/artifactory/libs-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+
 
 	<build>
 		<plugins>
